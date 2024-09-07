@@ -109,6 +109,44 @@ If unchecked box is already unchecked, it will not make any selection and the re
              */
     
 })
+
+test("lists and dropdown", async({page})=>{
+        const dropdownMenu = page.locator('ngx-header nb-select')
+        await dropdownMenu.click()
+
+        page.getByRole('list') //when list has UL tag
+        page.getByRole('listitem') //when list has li tag
+
+        // const optionList = page.getByRole('list').locator('nb-option')
+        //better option 
+        const optionList =page.locator('nb-option-list nb-option')
+        await expect(optionList).toHaveText(["Light", "Dark", "Cosmic", "Corporate"])
+        await optionList.filter({hasText: 'Cosmic'}).click()
+
+        const header = page.locator('nb-layout-header')
+
+        //verification
+        await expect(header).toHaveCSS('background-color',"rgb(50, 50, 89)")
+
+        //for all colors
+        const colors = {
+
+            "Light":"rgb(255, 255, 255)",
+            "Dark":"rgb(34, 43, 69)",
+            "Cosmic":"rgb(50, 50, 89)",
+            "Corporate":"rgb(255, 255, 255)"
+        }
+
+        await dropdownMenu.click()
+        for(const color in colors){
+            await optionList.filter({hasText:color}).click()
+            await expect(header).toHaveCSS('background-color',colors[color])
+            if(color!="Corporate")
+                await dropdownMenu.click()
+            
+
+        }
+})
     
     
     
