@@ -147,6 +147,65 @@ test("lists and dropdown", async({page})=>{
 
         }
 })
+
+test('tooltips', async({page})=>{
+    await page.getByText('Modal & Overlays').click()
+    await page.getByText('Tooltip').click()
+
+    const toolTipCard = page.locator('nb-card', {hasText:"Tooltip Placements"})
+    await toolTipCard.getByRole('button', {name: "Top"}).hover()
+
+    page.getByRole('tooltip') //if you have a role tooltip created
+    const tooltip = await page.locator('nb-tooltip').textContent()
+    expect(tooltip).toEqual('This is a tooltip')
+
+    /*** In order to locate the tooltip, sometimes it's challenging to identify the right locator so you can
+     * use ctrl + \ on Windows to freeze the browser in order to find
+     * out the tooltip which is dynamically shows up and hiding in the Dom in order to simulate the hover over
+     * the button, to trigger the tooltip to show up, you can use method hover in the playwright.
+     * If the tooltip role is available in the Dom, you can use get by role tooltip to get the locator for
+     * your tooltip, and the assertion of the text is very simple.
+     */
+})
+
+
+test("dialog alert", async ({page})=>{
+    await page.getByText("Modal & Overlays").click()
+    await page.getByText("Dialog").click()
+    await page.locator('nb-card').getByRole('button', {name:"Open Dialog with component"}).click()
+
+    await page.locator('nb-card-footer').getByRole("button", {name:"Dismiss Dialog"}).click()
+})
     
+test("dialog dynamic", async ({page})=> {
+    await page.getByText("Tables & Data").click()
+    await page.getByText("Smart Table").click()
+
+    // to accept the dialog box
+    page.on('dialog', dialog => {
+        expect(dialog.message()).toEqual('Are you sure you want to delete?')
+        dialog.accept()
+    })
+
+    await page.getByRole("table").locator("tr", {hasText:"mdo@gmail.com"}).locator('.ng2-smart-action-delete-delete').click()
+    //to verify
+    await expect(page.locator('table tr').first()).not.toHaveText('mdo@gmail.com')
+
+
+    /**
+     * When you are dealing with dialog boxes, if this is a regular web dialog box, you automate it as usual,
+    inspect element, find the element, interact with this.
+
+    But if you are dealing with the browser dialog boxes in order to accept it, you need to call 
+    page.on dialog listener and then inside of the dialog box need to call dialog accept.
+     Then playwright will accept this dialog and you will be able to move forward.
+     * 
+     */
+})
     
-    
+
+test("dynamic table", async({page})=>{
+    await page.getByText("Tables & Data").click()
+    await page.getByText("Smart Table").click()
+
+})
