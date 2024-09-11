@@ -208,4 +208,71 @@ test("dynamic table", async({page})=>{
     await page.getByText("Tables & Data").click()
     await page.getByText("Smart Table").click()
 
+
+    //1 get the row by any test in this row
+    // const targetRow = page.getByRole('row',{name: 'twitter@outlook.com'})
+    // await targetRow.locator('.nb-edit').click()
+    // await page.locator('input-editor').getByPlaceholder('Age').clear()
+    // await page.locator('input-editor').getByPlaceholder('Age').fill('26')
+    // await page.locator('.nb-checkmark').click()
+
+    //2 get the row based on the value in specific column
+    await page.locator('.ng2-smart-page-link').getByText('2').click()
+    const targetRowById = page.getByRole('row', {name: '11'}).filter({has: page.locator('td').nth(1).getByText('11')})
+    await targetRowById.locator('.nb-edit').click()
+    await page.locator('input-editor').getByPlaceholder('E-mail').clear()
+    await page.locator('input-editor').getByPlaceholder('E-mail').fill('ramyaiyengar12@gmail.com')
+    await page.locator('.nb-checkmark').click()
+    await expect(targetRowById.locator('td').nth(5)).toHaveText('ramyaiyengar12@gmail.com')
+
+
+    /**
+     * If you want to locate any row in the table and your table has a unique text, 
+     * you can use this for get by row and provide the text that is displayed in the table.
+     * Keep in mind the text that displayed in the table.Not always text.
+     * It sometimes can be a value.In this case, you will not be able to use this construction.
+     * You will need to use a different identifier such as get by placeholder or something else.
+     * If the text that you are looking for in the row is not unique but unique for the certain
+     * column, you
+     * can use a filter narrowing down the output of your row by a specific column using the 
+     * constructions
+     * like that using a locator filter.
+     * Then when you want to make the assertion, you can always navigate into the desired column
+     *  by the index of this column and make an assertion.
+     */
+
+
+    //3 test filter of the table
+    const ages = ['20', '30', '40', '60']
+
+    for(let age of ages){
+
+        await page.locator('input-filter').getByPlaceholder('Age').clear()
+        await page.locator('input-filter').getByPlaceholder('Age').fill(age)
+        await page.waitForTimeout(500)
+
+        const ageRows = page.locator('tbody tr')
+
+        for(let row of await ageRows.all()){
+            const cellValue = await page.locator('td').last().textContent()
+
+            if(age == '60'){
+                expect(await page.getByRole('table').textContent()).toContain('No data found')
+            }else{
+                expect(cellValue).toEqual(age)
+            }
+            
+        }
+    }
+
+    /**
+     * When you look through the list of the roles, you can use a regular for loop.
+     * In our example, we use first the test data and then we looped through the each of the row to validatethose expectations.
+     * So we created a simple locator to get all the rows.
+     * Then out of those roles need to create an array using all method and then row represent the iterator
+     * for the row that you can access as a regular locator.
+     * Finding the columns that you want to interact with.
+     * And you can also use a conditions to tailor your assertion based on the output of the table.
+     */
 })
+
